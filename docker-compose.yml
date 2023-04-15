@@ -1,0 +1,8 @@
+version: '3'
+services:
+  php:
+    image: aa
+    environment:
+      VAR: compose
+    ports:
+    - 80:80

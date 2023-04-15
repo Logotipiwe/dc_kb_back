@@ -1,0 +1,45 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: php
+  labels:
+    app: php
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: php
+  template:
+    metadata:
+      labels:
+        app: php
+    spec:
+      containers:
+        - name: php
+          image: logotipiwe/kb_back:3
+          imagePullPolicy: Always
+          env:
+            - name: DB_HOST
+              value: ms-ser
+            - name: DB_LOGIN
+              value: root
+            - name: DB_PASS
+              value: "1234"
+            - name: DB_NAME
+              value: keepbalance
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: php-ser
+spec:
+  selector:
+    app: php
+  type: LoadBalancer
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+#      nodePort: 3306
