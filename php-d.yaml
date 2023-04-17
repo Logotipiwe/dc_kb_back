@@ -1,22 +1,22 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: php
+  name: kb-back
   labels:
-    app: php
+    app: kb-back
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: php
+      app: kb-back
   template:
     metadata:
       labels:
-        app: php
+        app: kb-back
     spec:
       containers:
-        - name: php
-          image: logotipiwe/kb_back:3
+        - name: kb-back
+          image: logotipiwe/kb_back:5
           imagePullPolicy: Always
           env:
             - name: DB_HOST
@@ -33,13 +33,33 @@ spec:
 apiVersion: v1
 kind: Service
 metadata:
-  name: php-ser
+  name: kb-back-ser
 spec:
   selector:
-    app: php
-  type: LoadBalancer
+    app: kb-back
+  type: ClusterIP
   ports:
     - port: 80
       protocol: TCP
       targetPort: 80
 #      nodePort: 3306
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: kb-back-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/use-regex: "true"
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
+spec:
+  ingressClassName: nginx
+  rules:
+    - http:
+        paths:
+          - path: /kb_back(/|$)(.*)
+            pathType: Prefix
+            backend:
+              service:
+                name: kb-back-ser
+                port:
+                  number: 80
