@@ -1,8 +1,17 @@
 version: '3'
 services:
-  php:
+  kb_back:
+    container_name: kb_back
     image: logotipiwe/kb_back:1
     environment:
-      VAR: compose
-    ports:
-    - 80:80
+      DB_HOST: ms
+      DB_NAME: keepbalance
+      DB_LOGIN: root
+      DB_PASS: 1234
+    expose:
+      - 80
+    networks:
+      - dc-net
+networks:
+  dc-net:
+    external: true
