@@ -21,10 +21,11 @@ jobs:
           password: ${{ secrets.SSH_PASSWORD }}
       - name: Deploy
         uses: appleboy/ssh-action@v0.1.10
-        with:
+        env:
           host: ${{ secrets.DC_HOST }}
           username: ${{ secrets.SSH_USER }}
           password: ${{ secrets.SSH_PASSWORD }}
+        with:
           port: 22
           script: |
             docker-compose -f /kuber/kb_back/kb_back.yml down --remove-orphans
