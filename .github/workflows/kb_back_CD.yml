@@ -1,0 +1,31 @@
+name: Infra CI
+on:
+  push:
+    branches: [ "master" ]
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Run a one-line script
+        run: echo Hello, world!
+
+      - name: Upload
+        uses: garygrossgarten/github-action-scp@release
+        with:
+          local: infra
+          remote: /kuber/kb_back
+          host: ${{ secrets.DC_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+      - name: Deploy
+        uses: appleboy/ssh-action@v0.1.10
+        with:
+          host: ${{ secrets.DC_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          password: ${{ secrets.SSH_PASSWORD }}
+          port: 22
+          script: |
+            docker-compose -f /kuber/kb_back/kb_back.yml down --remove-orphans
+            docker-compose -f /kuber/kb_back/kb_back.yml up -d
