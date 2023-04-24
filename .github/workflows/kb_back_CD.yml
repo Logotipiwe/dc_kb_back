@@ -1,30 +1,37 @@
 name: KB back CD
 on:
   push:
-    branches: [ "master" ]
+    branches: [ "main" ]
   workflow_dispatch:
 jobs:
   build:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+        with:
+          repository: Logotipiwe/dc_vars
+          
+      - name: load-env
+        uses: duskmoon314/action-load-env@v1.1.0
+        
+      - uses: actions/checkout@v3
       - name: Run a one-line script
-        run: echo ${{ secrets.DC_HOST }} Hello, ${{ secrets.SSH_USER }}!
+        run: echo ${{ env.DC_HOST }} Hello, ${{ env.SSH_USER }}!
 
       - name: Upload
         uses: garygrossgarten/github-action-scp@release
         with:
           local: php
           remote: /kuber/kb_back
-          host: ${{ secrets.DC_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
+          host: ${{ env.DC_HOST }}
+          username: ${{ env.SSH_USER }}
+          password: ${{ env.SSH_PASSWORD }}
       - name: Deploy
         uses: appleboy/ssh-action@v0.1.10
         env:
-          host: ${{ secrets.DC_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          password: ${{ secrets.SSH_PASSWORD }}
+          host: ${{ env.DC_HOST }}
+          username: ${{ env.SSH_USER }}
+          password: ${{ env.SSH_PASSWORD }}
         with:
           port: 22
           script: |
