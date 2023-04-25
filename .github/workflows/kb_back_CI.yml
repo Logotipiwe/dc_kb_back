@@ -54,6 +54,8 @@ jobs:
           docker push --all-tags ${KB_BACK_TAG}
           echo Time tag ${KB_BACK_TAG_TIME}
           echo "KB_BACK_TAG=${KB_BACK_TAG}" >> "$GITHUB_ENV"
+        outputs:
+          KB_BACK_TAG: ${KB_BACK_TAG}
     outputs:
       KB_BACK_TAG: ${{ steps.build_push.outputs.KB_BACK_TAG }}
   deploy:
