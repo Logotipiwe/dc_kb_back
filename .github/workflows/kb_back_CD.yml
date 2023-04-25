@@ -1,45 +1,28 @@
-name: KB back CD
+name: KB test
 on:
   push:
-    branches: [ "CD" ]
+    branches: [ "test" ]
   workflow_dispatch:
 jobs:
-  build:
+  set:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
-        with:
-          repository: Logotipiwe/dc_vars
-          token: ${{secrets.PAT}}
-      - name: load-env
-        uses: duskmoon314/action-load-env@v1.1.0
-      - uses: actions/checkout@v3
-        with:
-          repository: Logotipiwe/dc_vars
-          
-      - name: load-env
-        uses: duskmoon314/action-load-env@v1.1.0
-        
-      - uses: actions/checkout@v3
-      - name: Run a one-line script
-        run: echo ${{ env.DC_HOST }} Hello, ${{ env.SSH_USER }}!
-
-      - name: Upload
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          local: php
-          remote: /kuber/kb_back
-          host: ${{ env.DC_HOST }}
-          username: ${{ env.SSH_USER }}
-          password: ${{ env.SSH_PASSWORD }}
-      - name: Deploy
-        uses: appleboy/ssh-action@v0.1.10
-        env:
-          host: ${{ env.DC_HOST }}
-          username: ${{ env.SSH_USER }}
-          password: ${{ env.SSH_PASSWORD }}
-        with:
-          port: 22
-          script: |
-            docker-compose -f /kuber/kb_back/kb_back.yml down --remove-orphans
-            docker-compose -f /kuber/kb_back/kb_back.yml up -d
+      - name: RUN
+        run: |
+          echo ${DOCKER_USER}
+          echo ${DOCKER_PAT}
+          export tts=ttss
+    outputs:
+      T0: aaaa
+      T1: ${tts}
+      T2: ${{env.tts}}
+      T3: ${{env.tts}}
+  get:
+    runs-on: ubuntu-latest
+    needs: ["set"]
+    steps:
+      - name: RUN
+        run: |
+          echo ${{env.T0}}
+          echo ${T0}
+          echo ${{needs.set.outputs.T0}}
