@@ -1,7 +1,7 @@
 name: KB back CD
 on:
   push:
-    branches: [ "main" ]
+    branches: [ "CD" ]
   workflow_dispatch:
 jobs:
   build:

@@ -4,7 +4,7 @@ on:
     branches: [ "main" ]
   workflow_dispatch:
 jobs:
-  build:
+  buildAndPush:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -26,7 +26,14 @@ jobs:
       - name: Build&push
         run: |
           export timestamp=$(date +%s)
-          export tag=${{ env.DOCKER_USER }}/kb_back:time-${timestamp}
+          export KB_BACK_TAG=${{ env.DOCKER_USER }}/kb_back:time-${timestamp}
 
-          docker build . --tag=${tag} --no-cache
-          docker push ${tag}
+          docker build . --tag=${KB_BACK_TAG} --no-cache
+          docker push ${KB_BACK_TAG}
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: RUN
+        run: |
+          echo TAG ${KB_BACK_TAG}
+          echo Docker user ${{env.DOCKER_USER}}
