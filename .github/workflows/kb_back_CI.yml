@@ -1,4 +1,4 @@
-name: KB back CD
+name: KB back CI
 on:
   push:
     branches: [ "main" ]
