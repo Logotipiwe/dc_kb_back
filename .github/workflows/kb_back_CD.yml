@@ -20,12 +20,12 @@ jobs:
           echo ${tts}
           echo ${tts3}
           echo ${{ env.tts3 }}
-#    outputs:
-#      T0: aaaa
-#      T1: ${tts}
-#      T2: ${{env.tts}}
-#      T3: ${{steps.run.outputs.tts}}
-#      T4: ${{steps.run.outputs.tts2}}
+    outputs:
+      T0: aaaa
+      T1: ${tts}
+      T2: ${{env.tts}}
+      T3: ${{steps.run.outputs.tts}}
+      T4: ${{steps.run.outputs.tts2}}
   get:
     runs-on: ubuntu-latest
     needs: ["set"]
