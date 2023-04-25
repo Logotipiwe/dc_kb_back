@@ -32,8 +32,9 @@ jobs:
           docker push ${KB_BACK_TAG}
   deploy:
     runs-on: ubuntu-latest
+    needs: buildAndPush
     steps:
       - name: RUN
         run: |
-          echo TAG ${KB_BACK_TAG}
+          echo TAG $KB_BACK_TAG
           echo Docker user ${{env.DOCKER_USER}}
