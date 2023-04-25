@@ -7,7 +7,7 @@ services:
       DB_HOST: ms
       DB_NAME: keepbalance
       DB_LOGIN: root
-      DB_PASS: ${DB_PASS}
+      DB_PASS: ${MYSQL_ROOT_PASSWORD}
     expose:
       - 80
     networks:
