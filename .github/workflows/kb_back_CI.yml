@@ -24,17 +24,27 @@ jobs:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_PAT }}
       - name: Build&push
+        id: build_push
         run: |
           export timestamp=$(date +%s)
           export KB_BACK_TAG=${{ env.DOCKER_USER }}/kb_back:time-${timestamp}
 
           docker build . --tag=${KB_BACK_TAG} --no-cache
           docker push ${KB_BACK_TAG}
+          echo "::set-output name=KB_BACK_TAG::${KB_BACK_TAG}"
+    outputs:
+      KB_BACK_TAG: ${{ steps.build_push.outputs.KB_BACK_TAG }}
   deploy:
     runs-on: ubuntu-latest
     needs: buildAndPush
     steps:
+      - uses: actions/checkout@v3
+        with:
+          repository: Logotipiwe/dc_vars
+          token: ${{secrets.PAT}}
+      - name: load-env
+        uses: duskmoon314/action-load-env@v1.1.0
       - name: RUN
         run: |
-          echo TAG $KB_BACK_TAG
+          echo TAG ${{ needs.buildAndPush.outputs.KB_BACK_TAG }}
           echo Docker user ${{env.DOCKER_USER}}
