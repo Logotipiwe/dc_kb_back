@@ -21,7 +21,7 @@ jobs:
         uses: garygrossgarten/github-action-scp@release
         with:
           local: .
-          concurrency: 5
+          concurrency: 10
           remote: /kuber/kb_back
           host: ${{ env.DC_HOST }}
           username: ${{ env.SSH_USER }}
