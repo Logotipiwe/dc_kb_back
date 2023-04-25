@@ -13,11 +13,12 @@ jobs:
           echo ${DOCKER_USER}
           echo ${DOCKER_PAT}
           export tts=ttss
+          echo "tts2=ttss2" >> "$GITHUB_OUTPUT"
     outputs:
       T0: aaaa
       T1: ${tts}
       T2: ${{env.tts}}
-      T3: ${{steps.run.outpts.tts}}
+      T3: ${{steps.run.outpts.tts2}}
   get:
     runs-on: ubuntu-latest
     needs: ["set"]
