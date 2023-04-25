@@ -59,7 +59,7 @@ jobs:
           password: ${{ env.SSH_PASSWORD }}
   deploy:
     runs-on: ubuntu-latest
-    needs: ["Upload"]
+    needs: ["Upload", "buildAndPush"]
     steps:
       - uses: actions/checkout@v3
         with:
