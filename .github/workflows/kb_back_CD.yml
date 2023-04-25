@@ -8,6 +8,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+          with:
+            repository: Logotipiwe/dc_vars
+            token: ${{secrets.PAT}}
+      - name: load-env
+        uses: duskmoon314/action-load-env@v1.1.0
+      - uses: actions/checkout@v3
         with:
           repository: Logotipiwe/dc_vars
           
