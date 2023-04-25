@@ -45,7 +45,7 @@ jobs:
         with:
           username: ${{ env.DOCKER_USER }}
           password: ${{ env.DOCKER_PAT }}
-      - name: Build&push
+      - name: Build_n_push
         id: build_push
         run: |
           export timestamp=$(date +'%F_%T')
