@@ -23,6 +23,7 @@ jobs:
     steps:
       - name: RUN
         run: |
-          echo ${{env.T0}}
-          echo ${T0}
           echo ${{needs.set.outputs.T0}}
+          echo ${{needs.set.outputs.T1}}
+          echo ${{needs.set.outputs.T2}}
+          echo ${{needs.set.outputs.T3}}
