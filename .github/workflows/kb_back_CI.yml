@@ -69,7 +69,13 @@ jobs:
       - name: load-env
         uses: duskmoon314/action-load-env@v1.1.0
       - name: Deploy
-        run: |
-          export KB_BACK_TAG=${{ needs.buildAndPush.outputs.KB_BACK_TAG }}
-          docker-compose -f /kuber/kb_back/kb_back.yml down --remove-orphans
-          docker-compose -f /kuber/kb_back/kb_back.yml up -d
+          uses: appleboy/ssh-action@v0.1.10
+          with:
+            host: ${{ env.DC_HOST }}
+            username: ${{ env.SSH_USER }}
+            password: ${{ env.SSH_PASSWORD }}
+            port: 22
+            script: |
+              export KB_BACK_TAG=${{ needs.buildAndPush.outputs.KB_BACK_TAG }}
+              docker-compose -f /kuber/kb_back/kb_back.yml down --remove-orphans
+              docker-compose -f /kuber/kb_back/kb_back.yml up -d
