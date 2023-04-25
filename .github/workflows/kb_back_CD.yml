@@ -8,6 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: RUN
+        id: run
         run: |
           echo ${DOCKER_USER}
           echo ${DOCKER_PAT}
@@ -16,7 +17,7 @@ jobs:
       T0: aaaa
       T1: ${tts}
       T2: ${{env.tts}}
-      T3: ${{env.tts}}
+      T3: ${{steps.run.outpts.tts}}
   get:
     runs-on: ubuntu-latest
     needs: ["set"]
