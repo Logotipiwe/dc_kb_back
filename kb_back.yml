@@ -2,7 +2,8 @@ version: '3'
 services:
   kb_back:
     container_name: kb_back
-    image: logotipiwe/kb_back:2
+#    image: logotipiwe/kb_back:2
+    image: ${KB_BACK_TAG}
     environment:
       DB_HOST: ms
       DB_NAME: keepbalance
