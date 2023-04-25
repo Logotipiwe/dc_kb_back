@@ -48,15 +48,12 @@ jobs:
       - name: Build_n_push
         id: build_push
         run: |
-          export timestamp=$(date +'%F_%T')
-#          export KB_BACK_TAG_TIME=${{ env.DOCKER_USER }}/kb_back:time-${timestamp}
           export KB_BACK_TAG=${{ env.DOCKER_USER }}/kb_back
 
           docker build . -t ${KB_BACK_TAG}
           docker push --all-tags ${KB_BACK_TAG}
           echo Time tag ${KB_BACK_TAG_TIME}
           echo "KB_BACK_TAG=${KB_BACK_TAG}" >> "$GITHUB_ENV"
-#          echo "::set-output name=KB_BACK_TAG::${KB_BACK_TAG}"
     outputs:
       KB_BACK_TAG: ${{ steps.build_push.outputs.KB_BACK_TAG }}
   deploy:
