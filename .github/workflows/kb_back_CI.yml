@@ -76,5 +76,8 @@ jobs:
           port: 22
           script: |
             export KB_BACK_TAG=${{ needs.buildAndPush.outputs.KB_BACK_TAG }}
+            export DB_HOST=ms
+            export DB_LOGIN=root
+            export DB_PASS=${{ env.MYSQL_ROOT_PASSWORD }}
             docker-compose -f /kuber/kb_back/kb_back.yml down --remove-orphans
             docker-compose -f /kuber/kb_back/kb_back.yml up -d

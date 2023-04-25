@@ -2,13 +2,12 @@ version: '3'
 services:
   kb_back:
     container_name: kb_back
-#    image: logotipiwe/kb_back:2
     image: ${KB_BACK_TAG}
     environment:
-      DB_HOST: ms
+      DB_HOST: ${DB_HOST}
       DB_NAME: keepbalance
-      DB_LOGIN: root
-      DB_PASS: 1234
+      DB_LOGIN: ${DB_LOGIN}
+      DB_PASS: ${DB_PASS}
     expose:
       - 80
     networks:
