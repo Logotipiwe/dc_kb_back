@@ -31,9 +31,11 @@ jobs:
 
           docker build . --tag=${KB_BACK_TAG} --no-cache
           docker push ${KB_BACK_TAG}
-          echo "::set-output name=KB_BACK_TAG::${KB_BACK_TAG}"
-    outputs:
-      KB_BACK_TAG: ${{ steps.build_push.outputs.KB_BACK_TAG }}
+          echo "KB_BACK_TAG=${KB_BACK_TAG}" >> "$GITHUB_ENV"
+          echo "KB_BACK_TAG=${KB_BACK_TAG}22222" >> "$GITHUB_OUTPUT"
+#          echo "::set-output name=KB_BACK_TAG::${KB_BACK_TAG}"
+#    outputs:
+#      KB_BACK_TAG: ${{ steps.build_push.outputs.KB_BACK_TAG }}
   deploy:
     runs-on: ubuntu-latest
     needs: buildAndPush
@@ -47,4 +49,4 @@ jobs:
       - name: RUN
         run: |
           echo TAG ${{ needs.buildAndPush.outputs.KB_BACK_TAG }}
-          echo Docker user ${{env.DOCKER_USER}}
+          echo Docker user ${{env.KB_BACK_TAG}}
