@@ -14,6 +14,12 @@ jobs:
           echo ${DOCKER_PAT}
           export tts=ttss
           echo "tts2=ttss2" >> "$GITHUB_OUTPUT"
+          echo "tts3=ttss2" >> "$GITHUB_ENV"
+      - name: AAAAAGAAAA
+        run: |
+          echo ${tts}
+          echo ${tts3}
+          echo ${{ env.tts3 }}
     outputs:
       T0: aaaa
       T1: ${tts}
