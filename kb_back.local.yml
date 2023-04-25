@@ -1,0 +1,19 @@
+version: '3'
+services:
+  kb_back:
+    container_name: kb_back
+    image: logotipiwe/php-8-apache
+    environment:
+      DB_HOST: ms
+      DB_NAME: keepbalance
+      DB_LOGIN: root
+      DB_PASS: ${MYSQL_ROOT_PASSWORD}
+    volumes:
+    - ./php/:/var/www/html/kb_back_service
+    expose:
+      - 80
+    networks:
+      - dc-net
+networks:
+  dc-net:
+    external: true

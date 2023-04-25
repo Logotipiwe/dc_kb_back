@@ -1,6 +1,4 @@
-FROM php:8-apache
-RUN docker-php-ext-install mysqli && docker-php-ext-enable mysqli
-
+FROM logotipiwe/php-8-apache
 COPY php/ /var/www/html/kb_back_service
 
 #docker build . -t logo_repo:mypep
