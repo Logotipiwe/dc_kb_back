@@ -20,7 +20,7 @@ jobs:
       - name: Upload
         uses: garygrossgarten/github-action-scp@release
         with:
-          local: php
+#          local: .
           remote: /kuber/kb_back
           host: ${{ env.DC_HOST }}
           username: ${{ env.SSH_USER }}
