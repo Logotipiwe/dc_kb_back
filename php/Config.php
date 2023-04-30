@@ -4,9 +4,9 @@ class Config
     /**
      * Для: заголовка CrossOrigin, вывода ошибок бд
      */
-    private static bool $debug = true;
-    private static bool $display_err = false;
-    private static bool $auto_login = true;
+    private static bool $debug;
+    private static bool $display_err;
+    private static bool $auto_login;
 
     private static bool $enable_all_flags = false;
     private static bool $disable_all_flags = false;
@@ -23,6 +23,10 @@ class Config
 
     public function __construct()
     {
+        $this->debug = (bool) getenv('KB_BACK_DEBUG');
+        $this->display_err = (bool) getenv('KB_BACK_DISPLAY_ERR');
+        $this->auto_login = (bool) getenv('KB_BACK_AUTO_LOGIN');
+
         $this->db_host = getenv('DB_HOST');
         $this->db_name = getenv('DB_NAME');
         $this->db_login = getenv("DB_LOGIN");

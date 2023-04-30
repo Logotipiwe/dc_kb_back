@@ -8,6 +8,10 @@ services:
       DB_NAME: keepbalance
       DB_LOGIN: root
       DB_PASS: ${MYSQL_ROOT_PASSWORD}
+
+      KB_BACK_DEBUG: false
+      KB_BACK_DISPLAY_ERR: false
+      KB_BACK_AUTO_LOGIN: false
     volumes:
     - ./php/:/var/www/html/kb_back_service
     expose:
