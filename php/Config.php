@@ -23,9 +23,10 @@ class Config
 
     public function __construct()
     {
-        $this->debug = (bool) getenv('KB_BACK_DEBUG');
-        $this->display_err = (bool) getenv('KB_BACK_DISPLAY_ERR');
-        $this->auto_login = (bool) getenv('KB_BACK_AUTO_LOGIN');
+        self::$debug = filter_var(getenv('KB_BACK_DEBUG'), FILTER_VALIDATE_BOOL);
+        self::$display_err = filter_var(getenv('KB_BACK_DISPLAY_ERR'), FILTER_VALIDATE_BOOL);
+        self::$auto_login = filter_var(getenv('KB_BACK_AUTO_LOGIN'), FILTER_VALIDATE_BOOL);
+        error_log(self::$auto_login ? "DA" : "NO");
 
         $this->db_host = getenv('DB_HOST');
         $this->db_name = getenv('DB_NAME');
