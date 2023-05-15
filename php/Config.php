@@ -26,7 +26,6 @@ class Config
         self::$debug = filter_var(getenv('KB_BACK_DEBUG'), FILTER_VALIDATE_BOOL);
         self::$display_err = filter_var(getenv('KB_BACK_DISPLAY_ERR'), FILTER_VALIDATE_BOOL);
         self::$auto_login = filter_var(getenv('KB_BACK_AUTO_LOGIN'), FILTER_VALIDATE_BOOL);
-        error_log(self::$auto_login ? "DA" : "NO");
 
         $this->db_host = getenv('DB_HOST');
         $this->db_name = getenv('DB_NAME');
@@ -48,6 +47,9 @@ class Config
         if(isset($_GET['auto_auth_token']) AND $_GET['auto_auth_token'] === self::$auto_auth_token){
             self::$auto_login = true;
         }
+
+        if(self::$auto_login) error_log("Auto login enabled");
+        else error_log("Auto login disabled");
     }
 
     public static function isAutoLogin()

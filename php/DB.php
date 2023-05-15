@@ -439,10 +439,13 @@ class DB
             if ($user['token'] === $token) {
                 $this->user = $user;
                 $this->query("SET @user_id = ?;", 'i', $user['id']);
+                error_log("AUTH");
             } else {
+                error_log("!!AUTH");
                 throw new AuthException();
             }
         } else {
+            error_log("!!AUTH");
             throw new AuthException();
         }
     }
