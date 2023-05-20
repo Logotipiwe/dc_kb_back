@@ -3,6 +3,7 @@ services:
   kb_back:
     container_name: kb_back
     image: ${KB_BACK_TAG}
+    restart: always
     environment:
       DB_HOST: ms
       DB_NAME: keepbalance
