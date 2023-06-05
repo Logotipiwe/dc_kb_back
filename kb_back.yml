@@ -5,9 +5,9 @@ services:
     image: ${KB_BACK_TAG}
     restart: always
     environment:
-      DB_HOST: ms
+      DB_HOST: ${DB_HOST}
       DB_NAME: keepbalance
-      DB_LOGIN: root
+      DB_LOGIN: ${DB_USER}
       DB_PASS: ${MYSQL_ROOT_PASSWORD}
 
       KB_BACK_DEBUG: false

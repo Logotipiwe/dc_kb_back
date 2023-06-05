@@ -77,5 +77,7 @@ jobs:
           script: |
             export KB_BACK_TAG=${{ needs.buildAndPush.outputs.KB_BACK_TAG }}
             export MYSQL_ROOT_PASSWORD=${{ env.MYSQL_ROOT_PASSWORD }}
+            export DB_USER=${{ env.DB_USER }}
+            export DB_HOST=${{ env.DB_HOST }}
             docker-compose -f /kuber/kb_back/kb_back.yml down --remove-orphans
             docker-compose -f /kuber/kb_back/kb_back.yml up -d --pull=always
