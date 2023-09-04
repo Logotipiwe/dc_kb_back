@@ -1,0 +1,16 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="Up" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+    <deployment type="docker-compose.yml">
+      <settings>
+        <option name="envFilePath" value="C:\PhpstormProjects\dc_vars\local.env" />
+        <option name="services">
+          <list>
+            <option value="kb_back" />
+          </list>
+        </option>
+        <option name="sourceFilePath" value="kb_back.local.yml" />
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>

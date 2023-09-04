@@ -96,18 +96,20 @@ class Methods
     public static function period_new($data, DB $db)
     {
         Validating::validate([
-            'start_date' => 'date',
-            'end_date' => 'date',
-            'init_store' => 'int|min_val:0',
+            'startDate' => 'date',
+            'endDate' => 'date',
+            'initStore' => 'int|min_val:0',
         ], $data, $db);
 
         $wallets = (isset($data['wallets'])) ? $data['wallets'] : [];
+        $limits = (isset($data['limits'])) ? $data['limits'] : [];
 
         $period_id = $db->period_new(
-            $data['start_date'],
-            $data['end_date'],
-            $data['init_store'],
-            $wallets
+            $data['startDate'],
+            $data['endDate'],
+            $data['initStore'],
+            $wallets,
+            $limits
         );
         if (!$period_id) return self::err('db_err', 'Не удалось создать период');
 
@@ -219,6 +221,8 @@ class Methods
             'categories' => $db->categories(),
             'transactions' => $db->transactions(true),
             'balances' => $db->get_balances(3),
+            'limit_balances' => $db->get_limit_balances(3),
+            'limits' => $db->get_limits($curr_period),
             'wallets' => $db->get_wallets(),
             'transaction_types' => $db->trans_types(),
             'periods' => $db->get_periods(),

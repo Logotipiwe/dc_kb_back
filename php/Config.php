@@ -8,9 +8,6 @@ class Config
     private static bool $display_err;
     private static bool $auto_login;
 
-    private static bool $enable_all_flags = false;
-    private static bool $disable_all_flags = false;
-
     public static string $debug_token = "hduh43yh5u43ij4tj43jy";
     public static string $auto_auth_token = "hduh43yh5u43ij4tj43jy";
     public static string $vk_token = "is_a_scrt";
@@ -31,19 +28,7 @@ class Config
         $this->db_name = getenv('DB_NAME');
         $this->db_login = getenv("DB_LOGIN");
         $this->db_password = getenv("DB_PASS");
-//        $this->db_login = self::$debug ? 'root' : 'admin';
-//        $this->db_password = self::$debug ? '1234' : 'eife4Wienein';
 
-        if(self::$enable_all_flags){
-            self::$debug = true;
-            self::$display_err = true;
-            self::$auto_login = true;
-        }
-        if(self::$disable_all_flags){
-            self::$debug = false;
-            self::$display_err = false;
-            self::$auto_login = false;
-        }
         if(isset($_GET['auto_auth_token']) AND $_GET['auto_auth_token'] === self::$auto_auth_token){
             self::$auto_login = true;
         }
