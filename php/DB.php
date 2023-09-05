@@ -432,12 +432,12 @@ class DB
             $categories_accounted_in_limits = array_map(function ($limit){return $limit['category_id'];}, $limits);
             $categoriesFilter = "";
             if(!empty($categories_accounted_in_limits)) {
-                $categoriesFilter = "AND transactions.category NOT IN (" . join(",", $categories_accounted_in_limits).")";
+                $categoriesFilter = "AND (transactions.category is null OR transactions.category NOT IN (" . join(",", $categories_accounted_in_limits)."))";
             }
 
             $diff = $this->get_diff($curr_date, $curr_period, $categoriesFilter);
 
-            $per_day = $this->per_day($curr_period);//TODO minus limits
+            $per_day = $this->per_day($curr_period);
             $days_past = $this->days_past($curr_period, $curr_date);
 
             $ans[$curr_date] = round($per_day * $days_past - $diff);

@@ -197,22 +197,16 @@ class Methods
         $wallets_init = (isset($data['wallets'])) ? $data['wallets'] : [];
         $limits = $data['limits'];
 
+        $db->query("DELETE FROM period_wallet WHERE period_id = ?",'i', $period_id);
         foreach ($wallets_init as $wallet) {
-            if($db->query("SELECT * FROM period_wallet WHERE period_id = ? AND wallet_id = ?", 'ii', $period_id, $wallet['id'])->get_result()->num_rows) {
-                $db->query("UPDATE period_wallet SET sum = ?, is_add_to_balance = ? WHERE period_id = ? AND wallet_id = ?", 'iiii',
-                    $wallet['sum'], $wallet['is_add_to_balance'], $period_id, $wallet['id']);
-            } else {
-                $db->query("INSERT INTO period_wallet (period_id, wallet_id, sum, is_add_to_balance) VALUES (?,?,?,?)",'iiii',
-                    $period_id, $wallet['id'], $wallet['sum'], $wallet['is_add_to_balance']);
-            }
+            $db->query("INSERT INTO period_wallet (period_id, wallet_id, sum, is_add_to_balance) VALUES (?,?,?,?)", 'iiii',
+                $period_id, $wallet['id'], $wallet['sum'], $wallet['is_add_to_balance']);
         }
 
-        if(count($limits)) {
-            $db->query("DELETE FROM period_limit where period_id = ?", 'i', $period_id);
-            foreach ($limits as $limit) {
-                $db->query("INSERT INTO period_limit (period_id, category_id, amount) VALUES (?,?,?)", 'iii',
-                    $period_id, $limit['category_id'], $limit['amount']);
-            }
+        $db->query("DELETE FROM period_limit where period_id = ?", 'i', $period_id);
+        foreach ($limits as $limit) {
+            $db->query("INSERT INTO period_limit (period_id, category_id, amount) VALUES (?,?,?)", 'iii',
+                $period_id, $limit['category_id'], $limit['amount']);
         }
 
         return self::ok();
