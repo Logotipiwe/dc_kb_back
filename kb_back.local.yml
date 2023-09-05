@@ -2,18 +2,18 @@ version: '3'
 services:
   kb_back:
     container_name: kb_back
-    image: logotipiwe/kb_back
+    image: logotipiwe/php-8-apache
     environment:
       DB_HOST: ms
       DB_NAME: keepbalance
       DB_LOGIN: root
-      DB_PASS: ${MYSQL_ROOT_PASSWORD}
+      DB_PASS: ${DB_PASS}
 
-      KB_BACK_DEBUG: false
-      KB_BACK_DISPLAY_ERR: false
-      KB_BACK_AUTO_LOGIN: false
-#    volumes:
-#    - ./php/:/var/www/html/kb_back_service
+      KB_BACK_DEBUG: true
+      KB_BACK_DISPLAY_ERR: true
+      KB_BACK_AUTO_LOGIN: true
+    volumes:
+    - ./php/:/var/www/html/kb_back_service
     expose:
       - 80
     networks:

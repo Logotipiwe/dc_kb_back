@@ -186,38 +186,44 @@ class DB
         return $res->affected_rows;
     }
 
-    public function period_new($start, $end, $init_store, $wallets)
+    public function period_new($start, $end, $init_store, $wallets, $limits)
     {
-        $is_periods_in_interval = $this->query(
+        $isPeriodsInInterval = $this->query(
             "SELECT * 
             FROM periods 
             where user_id = @user_id 
               AND (
                   (start_date BETWEEN '$start' AND '$end') OR 
                   (end_date BETWEEN '$start' AND '$end')
-              )")->get_result()->num_rows;
+            )")->get_result()->num_rows;
 
-        if ($is_periods_in_interval) return false;
+        if ($isPeriodsInInterval) return false;
 
         $this->query("INSERT INTO periods (user_id, init_store, start_date, end_date) VALUES (@user_id, ?, ?, ?)", 'iss', $init_store, $start, $end);
 
-        $period_id = $this->connection->insert_id;
+        $periodId = $this->connection->insert_id;
 
-        foreach ($wallets as $wallet_id=>$wallet){
-            $wallet = json_decode($wallet, 1);
+        foreach ($wallets as $wallet){
             $sum = $wallet['sum'];
-            $is_add_to_balance = ($wallet['is_add_to_balance'] ?? 1) ? 1 : 0;
+            $wallet_id = $wallet['walletId'];
+            $is_add_to_balance = ($wallet['isAddToBalance'] ?? 1) ? 1 : 0;
             $this->query("INSERT INTO period_wallet (period_id, wallet_id, sum, is_add_to_balance) VALUES (?,?,?,?)"
                 ,'iiii',
-                $period_id, $wallet_id, $sum, $is_add_to_balance
+                $periodId, $wallet_id, $sum, $is_add_to_balance
             );
         }
 
-        return $period_id;
+        foreach ($limits as $limit){
+            $this->query("INSERT INTO period_limit (period_id, category_id, amount) VALUES (?,?,?)", 'iii',
+                $periodId, $limit["categoryId"], $limit["amount"]);
+        }
+
+        return $periodId;
     }
 
     public function period_del($period_id)
     {
+        $this->query("DELETE FROM period_limit WHERE period_id = ?", 'i', $period_id);
         $this->query("DELETE FROM periods WHERE id = ?", 'i', $period_id);
         return true;
     }
@@ -321,7 +327,11 @@ class DB
             return $this->get_wallet($wallet_id, $date_before_start->format('Y-m-d'))['value'];
         }, $wallets_ids));
 
-        return $init_sum - $init_store;
+        $limits_sum = (int) $this->query(
+            "SELECT coalesce(sum(amount), 0) s from period_limit WHERE period_id = ?", 'i', $curr_period['id'])
+            ->get_result()->fetch_assoc()['s'];
+
+        return $init_sum - $init_store - $limits_sum;
     }
 
     public function days_count($period)
@@ -329,6 +339,13 @@ class DB
         $start = date_create_from_format('Y-m-d', $period['start_date']);
         $end = date_create_from_format('Y-m-d', $period['end_date']);
         return $start->diff($end)->days + 1;
+    }
+
+    public function per_day_in_limit($limit, $period = null)
+    {
+        if(is_null($period)) $period = $this->get_curr_period();
+        if(is_null($period)) return null;
+        return round($limit['amount']/$this->days_count($period));
     }
 
     public function per_day($period = null)
@@ -363,6 +380,42 @@ class DB
         return $periods;
     }
 
+    public function get_all_limits(){
+        return $this->query("SELECT * FROM period_limit")
+            ->get_result()->fetch_all(1);
+    }
+
+    public function get_limits($period = null){
+        if(is_null($period)) return [];
+        return $this->query("SELECT * FROM period_limit WHERE period_id = ?", 'i', $period['id'])
+            ->get_result()->fetch_all(1);
+    }
+
+    public function get_limit_balances($days = 1)
+    {
+        $ans = [];
+        $days--;
+        for ($i = 0; $i <= $days; $i++) {
+            $curr_date = $this->query("SELECT date_add(@curr_date, INTERVAL $i DAY) date")->get_result()->fetch_assoc()['date'];
+            $curr_period = $this->get_curr_period($curr_date);
+            if (is_null($curr_period)) {
+                $ans[$curr_date] = null;
+                continue;
+            }
+
+            $period_limits = $this->get_limits($curr_period);
+            foreach ($period_limits as $period_limit) {
+                $categoryId = $period_limit['category_id'];
+                $categoryFilter = "AND transactions.category = $categoryId";
+                $diff = $this->get_diff($curr_date, $curr_period, $categoryFilter);
+                $per_day = $this->per_day_in_limit($period_limit, $curr_period);
+                $days_past = $this->days_past($curr_period, $curr_date);
+                $ans[$curr_date][$categoryId] = round($per_day * $days_past - $diff);
+            }
+        }
+        return $ans;
+    }
+
     public function get_balances($days = 1)
     {
         $ans = [];
@@ -375,10 +428,27 @@ class DB
                 continue;
             }
 
-            $period_start = $curr_period['start_date'];
+            $limits = $this->get_limits($curr_period);
+            $categories_accounted_in_limits = array_map(function ($limit){return $limit['category_id'];}, $limits);
+            $categoriesFilter = "";
+            if(!empty($categories_accounted_in_limits)) {
+                $categoriesFilter = "AND (transactions.category is null OR transactions.category NOT IN (" . join(",", $categories_accounted_in_limits)."))";
+            }
 
-            $diff = $this->query(
-                "SELECT coalesce(sum(
+            $diff = $this->get_diff($curr_date, $curr_period, $categoriesFilter);
+
+            $per_day = $this->per_day($curr_period);
+            $days_past = $this->days_past($curr_period, $curr_date);
+
+            $ans[$curr_date] = round($per_day * $days_past - $diff);
+        }
+        return $ans;
+    }
+
+    public function get_diff($curr_date, $curr_period, $categoryFilter = "")
+    {
+        return $this->query(
+            "SELECT coalesce(sum(
                     CASE WHEN (from_balance AND is_minus) THEN transactions.value
                     WHEN ((from_balance AND !is_minus) OR (type = 3 AND transactions.is_add_to_balance)) THEN -transactions.value
                     END
@@ -389,17 +459,10 @@ class DB
                 LEFT JOIN period_wallet pw on wallets.id = pw.wallet_id AND pw.period_id = ?
                 WHERE user_id = @user_id
                     AND (period_id is null OR pw.is_add_to_balance)
-                    AND date(time) >= '$period_start'
+                    {$categoryFilter}
+                    AND date(time) >= '{$curr_period['start_date']}'
                     AND date(time) <= '$curr_date'", 'i', $curr_period['id']
-            )->get_result()->fetch_assoc()['diff'];
-
-            $per_day = $this->per_day($curr_period);
-            $days_past = $this->days_past($curr_period, $curr_date);
-
-            $ans[$curr_date] = round($per_day * $days_past - $diff);
-        }
-        return $ans;
-
+        )->get_result()->fetch_assoc()['diff'];
     }
 
 
