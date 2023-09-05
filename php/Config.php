@@ -29,9 +29,9 @@ class Config
         $this->db_login = getenv("DB_LOGIN");
         $this->db_password = getenv("DB_PASS");
 
-        if(isset($_GET['auto_auth_token']) AND $_GET['auto_auth_token'] === self::$auto_auth_token){
-            self::$auto_login = true;
-        }
+//        if(isset($_GET['auto_auth_token']) AND $_GET['auto_auth_token'] === self::$auto_auth_token){
+//            self::$auto_login = true;
+//        }
 
         if(self::$auto_login) error_log("Auto login enabled");
         else error_log("Auto login disabled");
@@ -45,9 +45,9 @@ class Config
     public function configure()
     {
         header('Access-Control-Allow-Origin: *');
-        if((isset($_POST['debug']) and $_POST['debug'] === self::$debug_token) or (isset($_GET['debug']) and $_GET['debug'] === self::$debug_token)){
-            self::$debug = true;
-        }
+//        if((isset($_POST['debug']) and $_POST['debug'] === self::$debug_token) or (isset($_GET['debug']) and $_GET['debug'] === self::$debug_token)){
+//            self::$debug = true;
+//        }
 
         if(self::isDisplayErr()){
             ini_set('error_reporting', E_ALL);
