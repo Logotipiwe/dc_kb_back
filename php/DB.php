@@ -223,6 +223,7 @@ class DB
 
     public function period_del($period_id)
     {
+        $this->query("DELETE FROM period_limit WHERE period_id = ?", 'i', $period_id);
         $this->query("DELETE FROM periods WHERE id = ?", 'i', $period_id);
         return true;
     }
@@ -326,7 +327,11 @@ class DB
             return $this->get_wallet($wallet_id, $date_before_start->format('Y-m-d'))['value'];
         }, $wallets_ids));
 
-        return $init_sum - $init_store;
+        $limits_sum = (int) $this->query(
+            "SELECT coalesce(sum(amount), 0) s from period_limit WHERE period_id = ?", 'i', $curr_period['id'])
+            ->get_result()->fetch_assoc()['s'];
+
+        return $init_sum - $init_store - $limits_sum;
     }
 
     public function days_count($period)
@@ -375,7 +380,12 @@ class DB
         return $periods;
     }
 
-    public function get_limits($period){
+    public function get_all_limits(){
+        return $this->query("SELECT * FROM period_limit")
+            ->get_result()->fetch_all(1);
+    }
+
+    public function get_limits($period = null){
         if(is_null($period)) return [];
         return $this->query("SELECT * FROM period_limit WHERE period_id = ?", 'i', $period['id'])
             ->get_result()->fetch_all(1);
@@ -396,7 +406,8 @@ class DB
             $period_limits = $this->get_limits($curr_period);
             foreach ($period_limits as $period_limit) {
                 $categoryId = $period_limit['category_id'];
-                $diff = $this->get_diff($curr_date, $curr_period, $categoryId);
+                $categoryFilter = "AND transactions.category = $categoryId";
+                $diff = $this->get_diff($curr_date, $curr_period, $categoryFilter);
                 $per_day = $this->per_day_in_limit($period_limit, $curr_period);
                 $days_past = $this->days_past($curr_period, $curr_date);
                 $ans[$curr_date][$categoryId] = round($per_day * $days_past - $diff);
@@ -405,7 +416,7 @@ class DB
         return $ans;
     }
 
-    public function get_balances($days = 1, $categoryId = null)
+    public function get_balances($days = 1)
     {
         $ans = [];
         $days--;
@@ -417,9 +428,16 @@ class DB
                 continue;
             }
 
-            $diff = $this->get_diff($curr_date, $curr_period);
+            $limits = $this->get_limits($curr_period);
+            $categories_accounted_in_limits = array_map(function ($limit){return $limit['category_id'];}, $limits);
+            $categoriesFilter = "";
+            if(!empty($categories_accounted_in_limits)) {
+                $categoriesFilter = "AND transactions.category NOT IN (" . join(",", $categories_accounted_in_limits).")";
+            }
 
-            $per_day = $this->per_day($curr_period);
+            $diff = $this->get_diff($curr_date, $curr_period, $categoriesFilter);
+
+            $per_day = $this->per_day($curr_period);//TODO minus limits
             $days_past = $this->days_past($curr_period, $curr_date);
 
             $ans[$curr_date] = round($per_day * $days_past - $diff);
@@ -427,9 +445,8 @@ class DB
         return $ans;
     }
 
-    public function get_diff($curr_date, $curr_period, $categoryId = null)
+    public function get_diff($curr_date, $curr_period, $categoryFilter = "")
     {
-        $categoryFilter = $categoryId !== null ? "AND transactions.category = $categoryId" : "";
         return $this->query(
             "SELECT coalesce(sum(
                     CASE WHEN (from_balance AND is_minus) THEN transactions.value
