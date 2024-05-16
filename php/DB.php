@@ -513,4 +513,21 @@ class DB
         }
     }
 
+    public function get_final_sum_last_date()
+    {
+        $res = $this->query("SELECT * from final_sum_dates ORDER BY last_date DESC LIMIT 1")
+            ->get_result();
+        if($row = $res->fetch_assoc()) {
+            return $row['last_date'];
+        } else {
+            return null;
+        }
+    }
+
+    public function set_final_sum_last_date($date)
+    {
+        return $this->query("INSERT INTO final_sum_dates values (?) on duplicate key update last_date = last_date",
+            's', $date);
+    }
+
 }

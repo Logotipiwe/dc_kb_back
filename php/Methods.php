@@ -248,7 +248,22 @@ class Methods
         $ans['analytics']['invested'] = $db->invested();
         $ans['analytics']['per_day'] = $db->per_day();
         $ans['analytics']['month_analytics'] = $db->month_analytics();
+        $ans['final_sum_date'] = $db->get_final_sum_last_date();
         return self::ok($ans);
+    }
+
+    public static function set_final_sum_date($data, DB $db)
+    {
+        Validating::validate([
+            'date' => 'required|date',
+        ], $data, $db);
+
+        $res = $db->set_final_sum_last_date($data['date']);
+        if($res->error){
+            return self::err($res->error);
+        } else {
+            return self::ok();
+        }
     }
 
     public static function test($data, DB $db)
