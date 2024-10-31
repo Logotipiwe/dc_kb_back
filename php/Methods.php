@@ -104,6 +104,12 @@ class Methods
         $wallets = (isset($data['wallets'])) ? $data['wallets'] : [];
         $limits = (isset($data['limits'])) ? $data['limits'] : [];
 
+        foreach ($limits as $limit){
+            if(!isset($limit["type"]) || ($limit["type"] != "DAY" && $limit["type"] != "PERIOD")){
+                return self::err("invalid", "wrong limit type");
+            }
+        }
+
         $period_id = $db->period_new(
             $data['startDate'],
             $data['endDate'],
@@ -111,7 +117,7 @@ class Methods
             $wallets,
             $limits
         );
-        if (!$period_id) return self::err('db_err', 'Не удалось создать период');
+        if (!$period_id) return self::err('db_err', 'Не удалось создать период в БД. Возможно на этот срок уже есть период');
 
         return self::ok($period_id);
     }
@@ -192,10 +198,17 @@ class Methods
             'init_store' => 'int|min_val:0'
         ], $data, $db);
         $period_id = $data['id'];
+        $limits = $data['limits'];
+
+        foreach ($limits as $limit){
+            if(!isset($limit["type"]) || ($limit["type"] != "DAY" && $limit["type"] != "PERIOD")){
+                return self::err("invalid", "wrong limit type");
+            }
+        }
+
         $db->query("UPDATE periods SET start_date = ?, end_date = ?, init_store = ? WHERE id = ?", 'ssii', $data['start_date'], $data['end_date'], $data['init_store'], $period_id);
 
         $wallets_init = (isset($data['wallets'])) ? $data['wallets'] : [];
-        $limits = $data['limits'];
 
         $db->query("DELETE FROM period_wallet WHERE period_id = ?",'i', $period_id);
         foreach ($wallets_init as $wallet) {
@@ -205,8 +218,8 @@ class Methods
 
         $db->query("DELETE FROM period_limit where period_id = ?", 'i', $period_id);
         foreach ($limits as $limit) {
-            $db->query("INSERT INTO period_limit (period_id, category_id, amount) VALUES (?,?,?)", 'iii',
-                $period_id, $limit['category_id'], $limit['amount']);
+            $db->query("INSERT INTO period_limit (period_id, category_id, amount, type) VALUES (?,?,?,?)", 'iiis',
+                $period_id, $limit['category_id'], $limit['amount'], $limit['type']);
         }
 
         return self::ok();
@@ -224,7 +237,10 @@ class Methods
             'categories' => $db->categories(),
             'transactions' => $db->transactions(true),
             'balances' => $db->get_balances(3),
-            'limit_balances' => $db->get_limit_balances(3),
+            'limit_balances' => [
+                'DAY' => $db->get_limit_balances_by_day(3),
+                'PERIOD' => $db->get_limits_with_period_type($curr_period),
+            ],
             'all_limits'  => $db->get_all_limits(),
             'wallets' => $db->get_wallets(),
             'transaction_types' => $db->trans_types(),

@@ -214,8 +214,8 @@ class DB
         }
 
         foreach ($limits as $limit){
-            $this->query("INSERT INTO period_limit (period_id, category_id, amount) VALUES (?,?,?)", 'iii',
-                $periodId, $limit["categoryId"], $limit["amount"]);
+            $this->query("INSERT INTO period_limit (period_id, category_id, amount, type) VALUES (?,?,?,?)", 'iiis',
+                $periodId, $limit["categoryId"], $limit["amount"], $limit['type']);
         }
 
         return $periodId;
@@ -385,13 +385,17 @@ class DB
             ->get_result()->fetch_all(1);
     }
 
-    public function get_limits($period = null){
+    public function get_limits($period = null, $type = null){
         if(is_null($period)) return [];
-        return $this->query("SELECT * FROM period_limit WHERE period_id = ?", 'i', $period['id'])
+        $query = "SELECT * FROM period_limit WHERE period_id = ?";
+        if($type != null) {
+            $query .= " AND type = '$type'";
+        }
+        return $this->query($query, 'i', $period['id'])
             ->get_result()->fetch_all(1);
     }
 
-    public function get_limit_balances($days = 1)
+    public function get_limit_balances_by_day($days = 1)
     {
         $ans = [];
         $days--;
@@ -403,7 +407,7 @@ class DB
                 continue;
             }
 
-            $period_limits = $this->get_limits($curr_period);
+            $period_limits = $this->get_limits($curr_period, "DAY"); //тут
             foreach ($period_limits as $period_limit) {
                 $categoryId = $period_limit['category_id'];
                 $categoryFilter = "AND transactions.category = $categoryId";
@@ -414,6 +418,28 @@ class DB
             }
         }
         return $ans;
+    }
+
+    public function get_limits_with_period_type($period)
+    {
+        $ans = [];
+        $limits = $this->get_limits($period, "PERIOD");
+        foreach ($limits as $limit) {
+            $amount = $limit["amount"];
+            $categoryFilter = "AND transactions.category = {$limit['category_id']}";
+            $diff = $this->get_diff($this->get_curr_date(), $period, $categoryFilter);
+//            echo 'eee'.$amount.'ooo'.$diff;
+            $ans[$limit['category_id']] = [
+                'init' => $amount,
+                'amount' => $amount - $diff
+            ];
+        }
+        return $ans;
+    }
+
+    public function get_curr_date()
+    {
+        return $this->query("SELECT @curr_date")->get_result()->fetch_array()[0];
     }
 
     public function get_balances($days = 1)
